@@ -1,6 +1,6 @@
-# PlateZero
+# PlateZero (50%)
 
-A modern, dark-themed food waste tracking dashboard built with React and Vite. Monitor and analyze food waste patterns with interactive visualizations and real-time insights.
+A modern, food waste tracking dashboard built with React and Vite. Monitor and analyze food waste patterns with interactive visualizations and real-time insights.
 
 ## Overview
 
