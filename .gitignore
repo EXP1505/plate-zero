@@ -50,3 +50,10 @@ coverage/
 .cache/
 .turbo/
 dist-ssr/
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+prediction/venv/

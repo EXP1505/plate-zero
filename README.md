@@ -1,156 +1,231 @@
-# PlateZero (50%)
+# PlateZero — Food Waste Analysis Dashboard for Campus Mess
 
-A modern, food waste tracking dashboard built with React and Vite. Monitor and analyze food waste patterns with interactive visualizations and real-time insights.
+A full-stack web application for digitizing, analyzing, and predicting food waste data from a campus mess. Built as a mini project for **22CS49 — 4th Sem Mini Project**, Department of Computer Science & Engineering, Dayananda Sagar College of Engineering, Bengaluru.
 
-## Overview
+## Team
 
-PlateZero provides a comprehensive dashboard for tracking food waste across your organization. Visualize waste trends, identify high-waste categories, and make data-driven decisions to reduce food waste and improve sustainability.
+| Name | USN | Contribution |
+|------|-----|-------------|
+| Chandan Meher | 1DS24CS046 | Backend (Node.js + Express, MongoDB, JWT auth) & Python prediction microservice |
+| Anubhav Pandey | 1DS24CS022 | Frontend (React.js, dashboard UI, Recharts visualizations) |
+| Abhay Kumar | 1DS24CS001 | Admin data entry, student feedback form, integration testing |
 
-### Key Features
+## Architecture
 
-- 📊 **Interactive Charts & Visualizations** - Daily waste trends, category distribution, and top wasted dishes
-- 📱 **Responsive Design** - Fully responsive layout that works on desktop, tablet, and mobile devices
-- 🎨 **Modern Dark Theme** - Beautiful dark UI with glassmorphism effects and smooth animations
-- 📈 **Real-time Insights** - View waste data with trend indicators and comparisons
-- ⚡ **Fast Performance** - Built with Vite for instant HMR and optimized builds
-- 🎯 **Clean Architecture** - Modular component structure for easy maintenance and scaling
+```
+┌──────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  React.js    │────▶│  Node.js/Express │────▶│    MongoDB      │
+│  Frontend    │◀────│  REST API        │◀────│    Database     │
+│  (Vite)      │     │  (Port 5000)     │     │                 │
+└──────────────┘     └────────┬─────────┘     └─────────────────┘
+                              │
+                              ▼
+                     ┌──────────────────┐
+                     │  Python/Flask    │
+                     │  Prediction      │
+                     │  (Port 5001)     │
+                     └──────────────────┘
+```
 
 ## Tech Stack
 
-- **Frontend Framework**: React 19.2.6
-- **Build Tool**: Vite 8.0.11
-- **Styling**: Tailwind CSS 4.3.0
-- **Charts**: Recharts 3.8.1
-- **Icons**: Lucide React 1.14.0
-- **CSS Processing**: PostCSS 8.5.14
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Recharts, TailwindCSS 4, Lucide React |
+| Backend | Node.js, Express.js, JWT, Bcrypt |
+| Database | MongoDB, Mongoose |
+| Prediction | Python, Flask, scikit-learn (Linear Regression) |
+| Build Tool | Vite 8 |
+
+## Features
+
+### 1. Data Collection Layer
+- Secure admin login with JWT authentication
+- Daily waste entry form: date, meal type, students served
+- Dynamic menu item rows: dish name, category, prepared (kg), wasted (kg)
+- Auto-calculated waste percentage
+
+### 2. Statistical Analysis Layer (Dashboard)
+- **Line Chart**: Daily waste trends over the last 7 days
+- **Donut Chart**: Waste distribution by food category (grains, vegetables, protein, dairy)
+- **Bar Chart**: Top 5 most wasted dishes
+- **Heatmap**: Average waste intensity by day of week
+- **Summary Cards**: Today's total waste, highest category, weekly average, top dish
+
+### 3. Prediction Layer
+- Python/Flask microservice using scikit-learn Linear Regression
+- Features: day of week (one-hot), 7-day rolling average, previous day's waste
+- Predicts tomorrow's total waste with confidence score
+- Displayed on admin dashboard as AI Prediction card
+
+### 4. Student Feedback Layer
+- Public feedback form (no login required)
+- Star ratings for food quality (1-5) and portion size (1-5)
+- Optional text comments
+- Aggregated ratings displayed on admin dashboard per meal type
+
+### 5. Reports & Analytics
+- Date range selector for custom analysis periods
+- Prepared vs. Wasted trend comparison chart
+- Summary stats: total waste, avg waste %, waste per student
+- Feedback correlation view
+- Detailed entries table
 
 ## Project Structure
 
 ```
 plate-zero/
-├── src/
+├── src/                          # React frontend
+│   ├── api/axios.js              # API client with JWT interceptor
+│   ├── context/AuthContext.jsx   # Authentication state management
+│   ├── pages/
+│   │   ├── LoginPage.jsx         # Login/Register
+│   │   ├── DashboardPage.jsx     # Main dashboard with charts
+│   │   ├── DataEntryPage.jsx     # Admin waste entry form
+│   │   ├── FeedbackPage.jsx      # Student feedback form
+│   │   └── ReportsPage.jsx       # Reports & analytics
 │   ├── components/
-│   │   ├── DashboardLayout.jsx      # Main layout with sidebar and header
-│   │   └── DashboardCharts.jsx      # Chart components and visualizations
-│   ├── App.jsx                       # Root component
-│   ├── main.jsx                      # Entry point
-│   ├── index.css                     # Global styles
-│   └── mockData.js                   # Sample data for development
-├── index.html                        # HTML entry point
-├── vite.config.js                    # Vite configuration
-├── tailwind.config.js                # Tailwind CSS configuration
-├── postcss.config.js                 # PostCSS configuration
-└── package.json                      # Project dependencies
+│   │   ├── DashboardLayout.jsx   # Layout with sidebar & header
+│   │   ├── DashboardCharts.jsx   # All chart visualizations
+│   │   ├── PredictionCard.jsx    # ML prediction display
+│   │   └── ProtectedRoute.jsx    # Route guard
+│   ├── App.jsx                   # Routing configuration
+│   └── mockData.js               # Fallback demo data
+│
+├── server/                       # Node.js backend
+│   ├── src/
+│   │   ├── config/db.js          # MongoDB connection
+│   │   ├── middleware/auth.js    # JWT middleware
+│   │   ├── models/               # Mongoose schemas
+│   │   ├── routes/               # API endpoints
+│   │   ├── seed/seed.js          # Database seeder
+│   │   └── index.js              # Express entry point
+│   └── .env                      # Environment variables
+│
+└── prediction/                   # Python microservice
+    ├── app.py                    # Flask prediction server
+    └── requirements.txt          # Python dependencies
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 16+ 
-- npm or yarn
+- Node.js 18+
+- MongoDB (local or Atlas)
+- Python 3.8+ (for prediction service)
 
-### Installation
+### 1. Install Dependencies
 
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+# Frontend
 cd plate-zero
-```
-
-2. Install dependencies:
-```bash
 npm install
+
+# Backend
+cd server
+npm install
+
+# Prediction service
+cd ../prediction
+pip install -r requirements.txt
 ```
 
-### Development
+### 2. Configure Environment
 
-Start the development server:
+Copy and edit the server `.env` file:
 ```bash
+cd server
+cp .env.example .env
+# Edit .env with your MongoDB URI
+```
+
+Default values:
+```
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/platezero
+JWT_SECRET=platezero_jwt_secret_2026
+PREDICTION_SERVICE_URL=http://localhost:5001
+```
+
+### 3. Seed the Database
+
+```bash
+cd server
+npm run seed
+```
+
+This creates:
+- 30 days of waste data with Indian mess menu items
+- Admin user: `admin@platezero.com` / `admin123`
+- Student user: `student@platezero.com` / `student123`
+- 2 weeks of student feedback entries
+
+### 4. Start All Services
+
+Terminal 1 — Backend:
+```bash
+cd server
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
-
-### Build for Production
-
-Build the project for production:
+Terminal 2 — Frontend:
 ```bash
-npm run build
+cd plate-zero
+npm run dev
 ```
 
-Preview the production build:
+Terminal 3 — Prediction (optional):
 ```bash
-npm run preview
+cd prediction
+python app.py
 ```
 
-## Available Scripts
+### 5. Open in Browser
 
-- `npm run dev` - Start the development server with hot module reloading
-- `npm run build` - Create an optimized production build
-- `npm run preview` - Preview the production build locally
-- `npm run lint` - Run ESLint to check code quality
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:5000
+- Prediction API: http://localhost:5001
 
-## Dashboard Features
+## API Endpoints
 
-### Summary Cards
-- **Total Waste** - Current day's total waste volume with trend comparison
-- **Highest Category** - Most wasted food category
-- **Weekly Average** - Average waste over the past week with trend
-- **Top Wasted Dish** - Most frequently wasted dish today
+### Authentication
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/auth/register` | No | Register new user |
+| POST | `/api/auth/login` | No | Login (returns JWT) |
+| GET | `/api/auth/me` | Yes | Get current user |
 
-### Visualizations
-- **Daily Waste Trends** - Line chart showing waste volume over the last 7 days
-- **Category Distribution** - Pie chart showing waste breakdown by category
-- **Top Wasted Dishes** - Bar chart of the most wasted dishes
-- **Heatmap** - Intensity view of daily waste patterns
+### Waste Entries
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/waste` | Admin | Create waste entry |
+| GET | `/api/waste` | Admin | List entries (with filters) |
+| GET | `/api/waste/:id` | Admin | Get single entry |
+| PUT | `/api/waste/:id` | Admin | Update entry |
+| DELETE | `/api/waste/:id` | Admin | Delete entry |
 
-### Navigation
-- Responsive sidebar with main menu items (Dashboard, Reports, Settings)
-- Mobile-friendly hamburger menu for small screens
-- Header with notification and user profile options
+### Statistics
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/stats/summary` | Admin | Today's summary cards |
+| GET | `/api/stats/daily-trends` | Admin | Daily waste totals |
+| GET | `/api/stats/category-distribution` | Admin | Waste by category |
+| GET | `/api/stats/top-wasted` | Admin | Most wasted dishes |
+| GET | `/api/stats/weekly-heatmap` | Admin | Avg waste by weekday |
+| GET | `/api/stats/prediction` | Admin | ML prediction proxy |
 
-## Data
-
-The project uses mock data located in `src/mockData.js` for demonstration purposes. Replace this with real data from your API or database when deploying.
-
-## Customization
-
-### Color Scheme
-Modify colors in `src/components/DashboardLayout.jsx` and `src/components/DashboardCharts.jsx` or adjust the Tailwind CSS color palette in `tailwind.config.js`.
-
-### Chart Data
-Update the mock data in `src/mockData.js` or connect to your backend API to display real waste data.
-
-### Layout & Components
-- Edit `DashboardLayout.jsx` to customize sidebar, header, and main navigation
-- Modify `DashboardCharts.jsx` to add, remove, or customize chart visualizations
-
-## Performance Optimization
-
-- **Code Splitting** - Vite automatically optimizes code splitting for production
-- **Asset Optimization** - Images and assets are automatically optimized
-- **CSS Purging** - Tailwind CSS purges unused styles for minimal bundle size
-
-## Browser Support
-
-- Chrome/Edge (latest)
-- Firefox (latest)
-- Safari (latest)
-- Mobile browsers (iOS Safari, Chrome Mobile)
+### Feedback
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/api/feedback` | No | Submit feedback |
+| GET | `/api/feedback` | Admin | List all feedback |
+| GET | `/api/feedback/avg-ratings` | Admin | Average ratings |
 
 ## License
 
-This project is licensed under the MIT License.
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Support
-
-For issues, questions, or suggestions, please open an issue in the repository.
+MIT License
 
 ---
 
-**PlateZero** - Making food waste visible, manageable, and reducible.
+**PlateZero** — Making food waste visible, manageable, and reducible. 🌱

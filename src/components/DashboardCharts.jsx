@@ -1,7 +1,5 @@
 import React from 'react';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -15,16 +13,29 @@ import {
   Area,
   AreaChart
 } from 'recharts';
-import { 
-  dailyWaste, 
-  categoryDistribution, 
-  topWastedDishes, 
-  averageWasteByDay 
+
+// Import mock data as fallbacks
+import {
+  dailyWaste as mockDailyWaste,
+  categoryDistribution as mockCategoryDist,
+  topWastedDishes as mockTopDishes,
+  averageWasteByDay as mockHeatmap,
 } from '../mockData';
 
 const PIE_COLORS = ['#10b981', '#8b5cf6', '#3b82f6', '#f43f5e'];
 
-const DashboardCharts = () => {
+const DashboardCharts = ({
+  dailyWaste,
+  categoryDistribution,
+  topWastedDishes,
+  averageWasteByDay,
+}) => {
+  // Use props if provided, otherwise fall back to mock data
+  const chartDailyWaste = dailyWaste?.length ? dailyWaste : mockDailyWaste;
+  const chartCategoryDist = categoryDistribution?.length ? categoryDistribution : mockCategoryDist;
+  const chartTopDishes = topWastedDishes?.length ? topWastedDishes : mockTopDishes;
+  const chartHeatmap = averageWasteByDay?.length ? averageWasteByDay : mockHeatmap;
+
   // Custom tooltip styling for dark mode
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -55,7 +66,7 @@ const DashboardCharts = () => {
   };
 
   // Helper for Heatmap Intensity (Dark mode compatible)
-  const maxAvgWaste = Math.max(...averageWasteByDay.map(d => d.avgWasteKg));
+  const maxAvgWaste = Math.max(...chartHeatmap.map(d => d.avgWasteKg));
   const getIntensityClass = (value) => {
     const ratio = value / maxAvgWaste;
     if (ratio > 0.9) return 'bg-rose-500/90 text-white shadow-[0_0_15px_rgba(244,63,94,0.4)] border border-rose-400/50';
@@ -66,10 +77,10 @@ const DashboardCharts = () => {
 
   return (
     <div className="space-y-6">
-      
+
       {/* Top Row: Line Chart & Donut Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Line Chart */}
         <div className="bg-slate-800/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 shadow-lg lg:col-span-2 hover:bg-slate-800/50 transition-colors duration-300">
           <div className="mb-6">
@@ -78,7 +89,7 @@ const DashboardCharts = () => {
           </div>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={dailyWaste} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart data={chartDailyWaste} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorWaste" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -86,10 +97,10 @@ const DashboardCharts = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.5} />
-                <XAxis 
-                  dataKey="date" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }}
                   tickFormatter={(val) => {
                     const date = new Date(val);
@@ -97,19 +108,19 @@ const DashboardCharts = () => {
                   }}
                   dy={10}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: '#94a3b8', fontSize: 12, fontWeight: 500 }}
                   dx={-10}
                 />
                 <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#475569', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                <Area 
-                  type="monotone" 
-                  dataKey="wasteKg" 
-                  stroke="#10b981" 
+                <Area
+                  type="monotone"
+                  dataKey="wasteKg"
+                  stroke="#10b981"
                   strokeWidth={3}
-                  fillOpacity={1} 
+                  fillOpacity={1}
                   fill="url(#colorWaste)"
                   activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981', filter: 'drop-shadow(0px 0px 4px rgba(16, 185, 129, 0.8))' }}
                 />
@@ -128,7 +139,7 @@ const DashboardCharts = () => {
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={categoryDistribution}
+                  data={chartCategoryDist}
                   cx="50%"
                   cy="50%"
                   innerRadius={70}
@@ -137,11 +148,11 @@ const DashboardCharts = () => {
                   dataKey="wasteKg"
                   stroke="none"
                 >
-                  {categoryDistribution.map((entry, index) => (
+                  {chartCategoryDist.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip 
+                <Tooltip
                   formatter={(value) => `${value} kg`}
                   contentStyle={{ backgroundColor: 'rgba(30, 41, 59, 0.9)', backdropFilter: 'blur(8px)', borderRadius: '12px', border: '1px solid #334155', color: '#f8fafc' }}
                   itemStyle={{ color: '#f8fafc', fontWeight: 600 }}
@@ -151,13 +162,13 @@ const DashboardCharts = () => {
             {/* Center Label for Donut */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none drop-shadow-md">
               <span className="text-3xl font-bold text-white">
-                {categoryDistribution.reduce((sum, item) => sum + item.wasteKg, 0).toFixed(1)}
+                {chartCategoryDist.reduce((sum, item) => sum + item.wasteKg, 0).toFixed(1)}
               </span>
               <span className="text-xs text-slate-400 uppercase font-bold tracking-widest mt-1">Total kg</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 mt-6">
-            {categoryDistribution.map((item, idx) => (
+            {chartCategoryDist.map((item, idx) => (
               <div key={item.category} className="flex items-center gap-3 bg-slate-800/50 p-2 rounded-lg border border-slate-700/30">
                 <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: PIE_COLORS[idx], boxShadow: `0 0 8px ${PIE_COLORS[idx]}80` }} />
                 <span className="text-xs text-slate-300 font-semibold tracking-wide">{item.category}</span>
@@ -170,7 +181,7 @@ const DashboardCharts = () => {
 
       {/* Bottom Row: Bar Chart & Heatmap */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Bar Chart */}
         <div className="bg-slate-800/40 backdrop-blur-sm p-6 rounded-2xl border border-slate-700/60 shadow-lg hover:bg-slate-800/50 transition-colors duration-300">
           <div className="mb-8">
@@ -179,8 +190,8 @@ const DashboardCharts = () => {
           </div>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart 
-                data={topWastedDishes} 
+              <BarChart
+                data={chartTopDishes}
                 layout="vertical"
                 margin={{ top: 0, right: 30, left: 40, bottom: 0 }}
               >
@@ -192,19 +203,19 @@ const DashboardCharts = () => {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#334155" opacity={0.5} />
                 <XAxis type="number" hide />
-                <YAxis 
-                  dataKey="name" 
-                  type="category" 
-                  axisLine={false} 
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  axisLine={false}
                   tickLine={false}
                   tick={{ fill: '#cbd5e1', fontSize: 13, fontWeight: 500 }}
                   width={130}
                   dx={-10}
                 />
                 <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(51, 65, 85, 0.4)' }} />
-                <Bar 
-                  dataKey="wasteKg" 
-                  fill="url(#colorBar)" 
+                <Bar
+                  dataKey="wasteKg"
+                  fill="url(#colorBar)"
                   radius={[0, 6, 6, 0]}
                   barSize={20}
                 />
@@ -219,12 +230,12 @@ const DashboardCharts = () => {
             <h3 className="text-lg font-bold text-white tracking-tight">Waste Intensity by Day</h3>
             <p className="text-sm text-slate-400 mt-1">Average historical volume mapped by weekday</p>
           </div>
-          
+
           <div className="grid grid-cols-7 gap-3 sm:gap-4 h-56 content-center px-2">
-            {averageWasteByDay.map((item) => (
+            {chartHeatmap.map((item) => (
               <div key={item.day} className="flex flex-col items-center gap-3">
                 {/* Heatmap Block */}
-                <div 
+                <div
                   className={`
                     w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 cursor-pointer
                     ${getIntensityClass(item.avgWasteKg)}
@@ -242,7 +253,7 @@ const DashboardCharts = () => {
               </div>
             ))}
           </div>
-          
+
           {/* Legend */}
           <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-700/50 text-xs font-medium text-slate-400">
             <span>Low</span>
