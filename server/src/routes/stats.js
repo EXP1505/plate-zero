@@ -238,14 +238,22 @@ router.get('/weekly-heatmap', async (req, res) => {
 router.get('/prediction', async (req, res) => {
   try {
     const predictionUrl = process.env.PREDICTION_SERVICE_URL || 'http://localhost:5001';
-    const response = await axios.get(`${predictionUrl}/predict`);
+    
+    // Fetch last 30 days of waste data directly from MongoDB
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const entries = await WasteEntry.find({ date: { $gte: thirtyDaysAgo } }).sort({ date: 1 });
+
+    // Send the raw data to the prediction microservice
+    const response = await axios.post(`${predictionUrl}/predict`, { entries });
     res.json(response.data);
   } catch (error) {
+    console.error('Prediction API Error:', error.message);
     // Return a graceful fallback if prediction service is unavailable
     res.json({
       predictions: [],
       error: 'Prediction service unavailable',
-      message: 'Start the Python prediction service to see forecasts',
+      message: 'Could not connect to the Python AI service',
     });
   }
 });

@@ -1,53 +1,18 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from collections import defaultdict
-import requests
 import os
 from datetime import datetime, timedelta
 
 app = Flask(__name__)
 CORS(app)
 
-API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:5000')
-
-
-def get_waste_data():
-    """Fetch historical waste data from the Node.js API."""
-    try:
-        # First login as admin to get a token
-        login_resp = requests.post(f'{API_BASE_URL}/api/auth/login', json={
-            'email': 'admin@platezero.com',
-            'password': 'admin123'
-        }, timeout=5)
-
-        if login_resp.status_code != 200:
-            return None
-
-        token = login_resp.json().get('token')
-
-        # Fetch last 30 days of waste data
-        resp = requests.get(
-            f'{API_BASE_URL}/api/waste',
-            params={'limit': 500},
-            headers={'Authorization': f'Bearer {token}'},
-            timeout=5
-        )
-
-        if resp.status_code != 200:
-            return None
-
-        return resp.json().get('entries', [])
-    except Exception as e:
-        print(f'Error fetching waste data: {e}')
-        return None
-
-
 def prepare_total_features(entries):
     """Transform waste entries into features for the total waste model."""
     if not entries or len(entries) < 7:
-        return None, None
+        return None, None, None
 
     # Group entries by date
     daily_data = {}
@@ -63,7 +28,7 @@ def prepare_total_features(entries):
     sorted_dates = sorted(daily_data.keys())
 
     if len(sorted_dates) < 7:
-        return None, None
+        return None, None, None
 
     X = []
     y = []
@@ -89,15 +54,16 @@ def prepare_total_features(entries):
     return np.array(X), np.array(y), daily_data
 
 
-@app.route('/predict', methods=['GET'])
+@app.route('/predict', methods=['POST'])
 def predict():
     """Predict tomorrow's total waste and the most wasted individual dish."""
-    entries = get_waste_data()
+    data = request.json
+    entries = data.get('entries', []) if data else []
 
     if not entries:
         return jsonify({
             'predictions': [],
-            'error': 'Could not fetch waste data from API',
+            'error': 'No waste data provided',
         }), 200
 
     X_total, y_total, daily_data = prepare_total_features(entries)
